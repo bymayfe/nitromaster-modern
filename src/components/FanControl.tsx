@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Disc, Zap, Sliders, ShieldAlert, Link, Unlink } from "lucide-react";
 import { api, SystemStatus } from "../services/api";
 
@@ -11,35 +11,45 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
   const [cpuPercent, setCpuPercent] = useState<number>(50);
   const [gpuPercent, setGpuPercent] = useState<number>(50);
   const [syncFans, setSyncFans] = useState<boolean>(true);
-
   const fans = status?.telemetry.fans || { cpu_rpm: 1800, gpu_rpm: 1800 };
 
-  const handleModeChange = async (newMode: "auto" | "max" | "custom") => {
+  const debounceTimerRef = useRef<any>(null);
+
+  const sendFanSpeed = useCallback((cpu: number, gpu: number) => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      api.setFans(cpu, gpu);
+    }, 60);
+  }, []);
+
+  const handleModeChange = (newMode: "auto" | "max" | "custom") => {
     setMode(newMode);
     if (newMode === "auto") {
-      await api.setFans(0, 0);
+      api.setFans(0, 0);
     } else if (newMode === "max") {
-      await api.setFans(100, 100);
       setCpuPercent(100);
       setGpuPercent(100);
+      api.setFans(100, 100);
     } else {
-      await api.setFans(cpuPercent, gpuPercent);
+      api.setFans(cpuPercent, gpuPercent);
     }
   };
 
-  const handleCpuChange = async (val: number) => {
+  const handleCpuChange = (val: number) => {
     setCpuPercent(val);
+    const targetGpu = syncFans ? val : gpuPercent;
     if (syncFans) setGpuPercent(val);
     if (mode === "custom") {
-      await api.setFans(val, syncFans ? val : gpuPercent);
+      sendFanSpeed(val, targetGpu);
     }
   };
 
-  const handleGpuChange = async (val: number) => {
+  const handleGpuChange = (val: number) => {
     setGpuPercent(val);
+    const targetCpu = syncFans ? val : cpuPercent;
     if (syncFans) setCpuPercent(val);
     if (mode === "custom") {
-      await api.setFans(syncFans ? val : cpuPercent, val);
+      sendFanSpeed(targetCpu, val);
     }
   };
 

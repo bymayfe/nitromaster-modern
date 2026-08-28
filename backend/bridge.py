@@ -13,7 +13,7 @@ import socket
 import logging
 import threading
 import subprocess
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -489,7 +489,7 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
 
 
 def run_server():
-    server = HTTPServer(("127.0.0.1", PORT), NitroMasterHTTPHandler)
+    server = ThreadingHTTPServer(("127.0.0.1", PORT), NitroMasterHTTPHandler)
     log.info(f"⚡ NitroMaster Bridge Server listening on http://127.0.0.1:{PORT}")
     try:
         server.serve_forever()

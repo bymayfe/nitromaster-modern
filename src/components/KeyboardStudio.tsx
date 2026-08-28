@@ -37,27 +37,46 @@ export const KeyboardStudio: React.FC = () => {
     return { r, g, b };
   };
 
-  const handleColorChange = async (hex: string) => {
+  const rgbDebounceTimer = React.useRef<any>(null);
+  const brightnessDebounceTimer = React.useRef<any>(null);
+
+  const handleColorChange = (hex: string, immediate: boolean = false) => {
+    // 1. Instant 0ms UI update
     if (activeZone === "all") {
       setZoneColors({ 1: hex, 2: hex, 3: hex, 4: hex });
-      await api.setRgb("all", hex, brightness);
     } else {
       setZoneColors((prev) => ({ ...prev, [activeZone]: hex }));
-      await api.setRgb(String(activeZone), hex, brightness);
+    }
+
+    // 2. Hardware dispatch
+    if (immediate) {
+      if (rgbDebounceTimer.current) clearTimeout(rgbDebounceTimer.current);
+      api.setRgb(activeZone === "all" ? "all" : String(activeZone), hex, brightness);
+    } else {
+      if (rgbDebounceTimer.current) clearTimeout(rgbDebounceTimer.current);
+      rgbDebounceTimer.current = setTimeout(() => {
+        api.setRgb(activeZone === "all" ? "all" : String(activeZone), hex, brightness);
+      }, 50);
     }
   };
 
-  const handleBrightnessChange = async (val: number) => {
+  const handleBrightnessChange = (val: number) => {
+    // 1. Instant 0ms UI update
     setBrightness(val);
-    await api.setBrightness(val);
+
+    // 2. Debounced hardware dispatch
+    if (brightnessDebounceTimer.current) clearTimeout(brightnessDebounceTimer.current);
+    brightnessDebounceTimer.current = setTimeout(() => {
+      api.setBrightness(val);
+    }, 50);
   };
 
-  const handleEffectChange = async (effId: string) => {
+  const handleEffectChange = (effId: string) => {
     setSelectedEffect(effId);
     if (effId === "static") {
-      await api.setBrightness(brightness);
+      api.setBrightness(brightness);
     } else {
-      await api.setEffect(effId, 5, brightness);
+      api.setEffect(effId, 5, brightness);
     }
   };
 
@@ -145,7 +164,7 @@ export const KeyboardStudio: React.FC = () => {
             {presetColors.map((preset) => (
               <button
                 key={preset.hex}
-                onClick={() => handleColorChange(preset.hex)}
+                onClick={() => handleColorChange(preset.hex, true)}
                 style={{ backgroundColor: preset.hex }}
                 title={preset.name}
                 className="w-full aspect-square rounded-xl transition-all duration-200 hover:scale-110 shadow-md border-2 border-white/20 active:scale-95 flex items-center justify-center"
