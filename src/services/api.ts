@@ -27,8 +27,18 @@ export interface PowerTelemetry {
   battery_status: string;
 }
 
+export interface SystemInfo {
+  vendor: string;
+  product: string;
+  bios: string;
+  os_name: string;
+  cpu_name: string;
+  full_name: string;
+}
+
 export interface Telemetry {
   timestamp: number;
+  system?: SystemInfo;
   cpu: CpuTelemetry;
   gpu: GpuTelemetry;
   fans: FansTelemetry;

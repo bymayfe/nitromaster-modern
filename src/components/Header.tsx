@@ -44,11 +44,11 @@ export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab 
             <h1 className="text-xl font-bold tracking-wider font-display uppercase text-white glow-text-red">
               Nitro<span className="text-rose-500">Master</span>
             </h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-slate-300 border border-white/10">
-              PRO MAX
-            </span>
           </div>
-          <p className="text-xs font-mono text-slate-400">Acer Nitro 16 AN16-42 • CachyOS</p>
+          <p className="text-xs font-mono text-slate-400">
+            {status?.telemetry.system?.full_name || "Acer Nitro"} • {status?.telemetry.system?.os_name || "Linux"}
+            {status?.telemetry.system?.bios ? ` (BIOS ${status.telemetry.system.bios})` : ""}
+          </p>
         </div>
       </div>
 

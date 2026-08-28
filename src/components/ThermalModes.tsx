@@ -102,7 +102,7 @@ export const ThermalModes: React.FC<ThermalModesProps> = ({ status, onProfileCha
           Thermal & Power Profiles
         </h2>
         <span className="text-xs font-mono text-slate-500">
-          Hardware Hotkey: <strong className="text-slate-300">Turbo Key (F10 / Mod)</strong>
+          Hardware Switch: <strong className="text-slate-300">Physical Mode Button</strong>
         </span>
       </div>
 

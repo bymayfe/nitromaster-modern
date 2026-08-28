@@ -194,14 +194,57 @@ class TelemetryCollector:
                 pass
         return status
 
+    def get_system_info(self) -> dict:
+        vendor = "Acer"
+        product = "Nitro 16"
+        bios = ""
+        os_name = "Linux"
+        cpu_name = "AMD Ryzen 7 8845HS"
+
+        try:
+            if os.path.exists("/sys/class/dmi/id/sys_vendor"):
+                with open("/sys/class/dmi/id/sys_vendor", "r") as f:
+                    vendor = f.read().strip()
+            if os.path.exists("/sys/class/dmi/id/product_name"):
+                with open("/sys/class/dmi/id/product_name", "r") as f:
+                    product = f.read().strip()
+            if os.path.exists("/sys/class/dmi/id/bios_version"):
+                with open("/sys/class/dmi/id/bios_version", "r") as f:
+                    bios = f.read().strip()
+            if os.path.exists("/etc/os-release"):
+                with open("/etc/os-release", "r") as f:
+                    for line in f:
+                        if line.startswith("PRETTY_NAME="):
+                            os_name = line.split("=", 1)[1].strip().strip('"')
+                            break
+            if os.path.exists("/proc/cpuinfo"):
+                with open("/proc/cpuinfo", "r") as f:
+                    for line in f:
+                        if "model name" in line:
+                            cpu_name = line.split(":", 1)[1].strip()
+                            break
+        except Exception:
+            pass
+
+        return {
+            "vendor": vendor,
+            "product": product,
+            "bios": bios,
+            "os_name": os_name,
+            "cpu_name": cpu_name,
+            "full_name": f"{vendor} {product}".strip()
+        }
+
     def collect_all(self) -> dict:
+        sys_info = self.get_system_info()
         return {
             "timestamp": time.time(),
+            "system": sys_info,
             "cpu": {
                 "usage": self.get_cpu_usage(),
                 "temp": self.get_cpu_temp(),
                 "freq_mhz": self.get_cpu_freq_mhz(),
-                "model": "AMD Ryzen 7 8845HS"
+                "model": sys_info["cpu_name"]
             },
             "gpu": self.get_gpu_telemetry(),
             "fans": self.get_fan_speeds(),

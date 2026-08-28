@@ -79,9 +79,9 @@ export function App() {
           <span>DAMX Kernel Bridge: {isConnected ? "ONLINE (Active)" : "OFFLINE"}</span>
         </div>
         <div className="flex items-center gap-4 text-[11px]">
-          <span>GPU: RTX 4070 (140W)</span>
-          <span>CPU: Ryzen 7 8845HS</span>
-          <span>Linux: CachyOS x86_64</span>
+          <span>GPU: {status?.telemetry.gpu.name || "NVIDIA GeForce RTX 4070"}</span>
+          <span>CPU: {status?.telemetry.system?.cpu_name || "AMD Ryzen"}</span>
+          <span>OS: {status?.telemetry.system?.os_name || "Linux"}</span>
         </div>
       </footer>
     </div>
