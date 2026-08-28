@@ -34,18 +34,10 @@ class DAMXSocketClient:
         payload = {"command": command, "params": params or {}}
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-                client.settimeout(2.0)
+                client.settimeout(0.4)
                 client.connect(DAMX_SOCKET)
                 client.sendall(json.dumps(payload).encode("utf-8"))
-                
-                chunks = []
-                while True:
-                    data = client.recv(4096)
-                    if not data:
-                        break
-                    chunks.append(data)
-                
-                raw = b"".join(chunks).decode("utf-8")
+                raw = client.recv(16384).decode("utf-8")
                 return json.loads(raw)
         except Exception as e:
             return {"status": "error", "message": str(e)}
@@ -235,9 +227,37 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
             damx_settings = DAMXSocketClient.send_command("get_all_settings")
             telemetry = collector.collect_all()
             
+            # Direct sysfs read for 100% reliable instantaneous platform profile
+            current_profile = "balanced"
+            if os.path.exists("/sys/firmware/acpi/platform_profile"):
+                try:
+                    with open("/sys/firmware/acpi/platform_profile", "r") as f:
+                        current_profile = f.read().strip()
+                except Exception:
+                    pass
+
+            available_profiles = ["low-power", "quiet", "balanced", "balanced-performance", "performance"]
+            if os.path.exists("/sys/firmware/acpi/platform_profile_choices"):
+                try:
+                    with open("/sys/firmware/acpi/platform_profile_choices", "r") as f:
+                        available_profiles = f.read().strip().split()
+                except Exception:
+                    pass
+
+            # Merge into settings
+            merged_settings = damx_settings.get("data", {})
+            if not isinstance(merged_settings, dict):
+                merged_settings = {}
+
+            if "thermal_profile" not in merged_settings or not isinstance(merged_settings["thermal_profile"], dict):
+                merged_settings["thermal_profile"] = {}
+
+            merged_settings["thermal_profile"]["current"] = current_profile
+            merged_settings["thermal_profile"]["available"] = available_profiles
+
             response = {
                 "status": "success",
-                "settings": damx_settings.get("data", {}),
+                "settings": merged_settings,
                 "telemetry": telemetry
             }
             self._set_headers(200)

@@ -8,8 +8,15 @@ interface ThermalModesProps {
 }
 
 export const ThermalModes: React.FC<ThermalModesProps> = ({ status, onProfileChange }) => {
-  const currentProfile = (status?.settings.thermal_profile?.current || "balanced").toLowerCase();
+  const serverProfile = (status?.settings.thermal_profile?.current || "balanced").toLowerCase();
+  const [selectedProfile, setSelectedProfile] = React.useState<string>(serverProfile);
   const onAc = status?.telemetry.power.on_ac ?? true;
+
+  React.useEffect(() => {
+    if (serverProfile) {
+      setSelectedProfile(serverProfile);
+    }
+  }, [serverProfile]);
 
   const modes = [
     {
@@ -80,6 +87,7 @@ export const ThermalModes: React.FC<ThermalModesProps> = ({ status, onProfileCha
   ];
 
   const handleSelect = async (profileId: string) => {
+    setSelectedProfile(profileId);
     await api.setProfile(profileId);
     if (onProfileChange) onProfileChange(profileId);
   };
@@ -98,9 +106,9 @@ export const ThermalModes: React.FC<ThermalModesProps> = ({ status, onProfileCha
         </span>
       </div>
 
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${visibleModes.length} gap-3`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {visibleModes.map((mode) => {
-          const isActive = currentProfile === mode.id;
+          const isActive = selectedProfile === mode.id;
           const Icon = mode.icon;
 
           return (
