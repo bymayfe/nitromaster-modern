@@ -114,13 +114,13 @@ export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab 
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-mono">
           {onAc ? (
             <>
-              <Plug className="w-4 h-4 text-emerald-400" />
-              <span className="text-emerald-400">AC 330W</span>
+              <Plug className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <span className="text-emerald-400 font-bold">{status?.telemetry.power?.charger_type || "AC 230W"}</span>
             </>
           ) : (
             <>
               <Battery className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400">{batteryPct}%</span>
+              <span className="text-amber-400 font-bold">{batteryPct}% ({status?.telemetry.power?.battery_status || "Discharging"})</span>
             </>
           )}
         </div>

@@ -25,6 +25,9 @@ export interface PowerTelemetry {
   on_ac: boolean;
   battery_pct: number;
   battery_status: string;
+  charger_type?: string;
+  battery_health_pct?: number;
+  cycle_count?: number;
 }
 
 export interface SystemInfo {

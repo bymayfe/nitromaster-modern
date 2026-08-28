@@ -173,25 +173,47 @@ class TelemetryCollector:
 
     def get_power_status(self) -> dict:
         """Check AC adapter and battery status."""
-        status = {"on_ac": True, "battery_pct": 100, "battery_status": "Unknown"}
-        # AC check
-        for path in glob.glob("/sys/class/power_supply/*/online"):
-            if any(k in path for k in ("AC", "ADP", "ACAD")):
+        status = {
+            "on_ac": True,
+            "battery_pct": 100,
+            "battery_status": "Full",
+            "charger_type": "AC 230W",
+            "battery_health_pct": 100,
+            "cycle_count": 0,
+            "power_w": 0.0
+        }
+        try:
+            # AC check
+            for path in glob.glob("/sys/class/power_supply/*/online"):
+                if any(k in path for k in ("AC", "ADP", "ACAD")):
+                    try:
+                        with open(path, "r") as f:
+                            status["on_ac"] = (f.read().strip() == "1")
+                    except Exception:
+                        pass
+
+            # Battery check
+            for bat in glob.glob("/sys/class/power_supply/BAT*"):
                 try:
-                    with open(path, "r") as f:
-                        status["on_ac"] = (f.read().strip() == "1")
+                    if os.path.exists(f"{bat}/capacity"):
+                        with open(f"{bat}/capacity", "r") as f:
+                            status["battery_pct"] = int(f.read().strip())
+                    if os.path.exists(f"{bat}/status"):
+                        with open(f"{bat}/status", "r") as f:
+                            status["battery_status"] = f.read().strip()
+                    if os.path.exists(f"{bat}/cycle_count"):
+                        with open(f"{bat}/cycle_count", "r") as f:
+                            status["cycle_count"] = int(f.read().strip())
+                    if os.path.exists(f"{bat}/charge_full") and os.path.exists(f"{bat}/charge_full_design"):
+                        with open(f"{bat}/charge_full", "r") as f1, open(f"{bat}/charge_full_design", "r") as f2:
+                            full = float(f1.read().strip())
+                            design = float(f2.read().strip())
+                            if design > 0:
+                                status["battery_health_pct"] = round(100.0 * (full / design), 1)
                 except Exception:
                     pass
-
-        # Battery check
-        for bat in glob.glob("/sys/class/power_supply/BAT*"):
-            try:
-                with open(f"{bat}/capacity", "r") as f:
-                    status["battery_pct"] = int(f.read().strip())
-                with open(f"{bat}/status", "r") as f:
-                    status["battery_status"] = f.read().strip()
-            except Exception:
-                pass
+        except Exception:
+            pass
         return status
 
     def get_system_info(self) -> dict:
