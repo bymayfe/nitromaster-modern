@@ -37,11 +37,13 @@ export interface SystemInfo {
   os_name: string;
   cpu_name: string;
   full_name: string;
+  temp?: number;
 }
 
 export interface Telemetry {
   timestamp: number;
   system?: SystemInfo;
+  system_temp?: number;
   cpu: CpuTelemetry;
   gpu: GpuTelemetry;
   fans: FansTelemetry;

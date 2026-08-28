@@ -257,11 +257,47 @@ class TelemetryCollector:
             "full_name": f"{vendor} {product}".strip()
         }
 
+    def get_system_temp(self) -> float:
+        """Read system / motherboard / ACPI temperature."""
+        for hwmon in sorted(glob.glob("/sys/class/hwmon/hwmon*")):
+            try:
+                with open(f"{hwmon}/name", "r") as f:
+                    name = f.read().strip()
+                if name == "acer":
+                    for tf in (f"{hwmon}/temp2_input", f"{hwmon}/temp3_input", f"{hwmon}/temp1_input"):
+                        if os.path.exists(tf):
+                            with open(tf, "r") as f:
+                                val = float(f.read().strip()) / 1000.0
+                                if 15 <= val <= 105:
+                                    return round(val, 1)
+                elif name == "acpitz":
+                    for tf in glob.glob(f"{hwmon}/temp*_input"):
+                        with open(tf, "r") as f:
+                            val = float(f.read().strip()) / 1000.0
+                            if 15 <= val <= 105:
+                                return round(val, 1)
+            except Exception:
+                continue
+
+        try:
+            if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+                with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                    val = float(f.read().strip()) / 1000.0
+                    if 15 <= val <= 105:
+                        return round(val, 1)
+        except Exception:
+            pass
+
+        return 48.0
+
     def collect_all(self) -> dict:
         sys_info = self.get_system_info()
+        sys_temp = self.get_system_temp()
+        sys_info["temp"] = sys_temp
         return {
             "timestamp": time.time(),
             "system": sys_info,
+            "system_temp": sys_temp,
             "cpu": {
                 "usage": self.get_cpu_usage(),
                 "temp": self.get_cpu_temp(),

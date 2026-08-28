@@ -1,5 +1,5 @@
 import React from "react";
-import { Cpu, Activity, Disc } from "lucide-react";
+import { Cpu, Activity, Disc, Thermometer } from "lucide-react";
 import { SystemStatus } from "../services/api";
 import { Language, translations } from "../i18n/translations";
 
@@ -138,6 +138,7 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status, lang =
   const telemetry = status?.telemetry;
 
   const cpu = telemetry?.cpu || { usage: 0, temp: 45, freq_mhz: 3800, model: "AMD Ryzen 7 8845HS" };
+  const systemTemp = telemetry?.system_temp || telemetry?.system?.temp || 48;
   const gpu = telemetry?.gpu || {
     name: "NVIDIA GeForce RTX 4070 Laptop",
     temp: 42,
@@ -201,15 +202,19 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status, lang =
           </div>
         </div>
 
-        {/* Bottom Stats */}
-        <div className="pt-3 border-t border-white/5 grid grid-cols-2 gap-2 text-center text-xs font-mono">
+        {/* Bottom Stats with System Temp */}
+        <div className="pt-3 border-t border-white/5 grid grid-cols-3 gap-1.5 text-center text-xs font-mono">
           <div className="bg-black/30 p-2 rounded-lg">
             <p className="text-[10px] text-slate-500 uppercase">{t.load}</p>
             <p className="font-bold text-slate-200">{cpu.usage}%</p>
           </div>
           <div className="bg-black/30 p-2 rounded-lg">
             <p className="text-[10px] text-slate-500 uppercase">{t.freq}</p>
-            <p className="font-bold text-slate-200">{(cpu.freq_mhz / 1000).toFixed(2)} GHz</p>
+            <p className="font-bold text-slate-200">{(cpu.freq_mhz / 1000).toFixed(2)}G</p>
+          </div>
+          <div className="bg-black/30 p-2 rounded-lg" title="Motherboard & ACPI System Temperature">
+            <p className="text-[10px] text-cyan-400 uppercase font-bold">{lang === "tr" ? "Sistem" : "System"}</p>
+            <p className="font-bold text-cyan-300">{systemTemp}°C</p>
           </div>
         </div>
       </div>
