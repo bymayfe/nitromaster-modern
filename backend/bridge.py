@@ -391,6 +391,22 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
             self._set_headers(200)
             self.wfile.write(json.dumps(res).encode("utf-8"))
 
+        elif path == "/api/set_fans":
+            cpu = max(0, min(100, int(payload.get("cpu", 0))))
+            gpu = max(0, min(100, int(payload.get("gpu", 0))))
+            log.info(f"Setting fan speeds: CPU={cpu}%, GPU={gpu}%")
+            
+            # Direct sysfs fallback
+            try:
+                with open("/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/fan_speed", "w") as f:
+                    f.write(f"{cpu},{gpu}\n")
+            except Exception:
+                pass
+
+            res = DAMXSocketClient.send_command("set_fan_speed", {"cpu": cpu, "gpu": gpu})
+            self._set_headers(200)
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+
         elif path == "/api/set_brightness":
             brightness = max(0, min(100, int(payload.get("brightness", 100))))
             collector.rgb_state["brightness"] = brightness
@@ -401,6 +417,14 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
             z4 = collector.rgb_state["zone4"].lstrip("#").zfill(6)[:6]
             
             log.info(f"Setting LED brightness: {brightness}% for zones ({z1}, {z2}, {z3}, {z4})")
+            
+            # Direct sysfs fallback
+            try:
+                with open("/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/four_zoned_kb/per_zone_mode", "w") as f:
+                    f.write(f"{z1},{z2},{z3},{z4},{brightness}\n")
+            except Exception:
+                pass
+
             res = DAMXSocketClient.send_command("set_per_zone_mode", {
                 "zone1": z1,
                 "zone2": z2,
@@ -444,6 +468,14 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
             z4 = collector.rgb_state["zone4"].lstrip("#").zfill(6)[:6]
 
             log.info(f"Setting 4-zone RGB: Z1={z1}, Z2={z2}, Z3={z3}, Z4={z4}, Brightness={brightness}%")
+            
+            # Direct sysfs fallback
+            try:
+                with open("/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/four_zoned_kb/per_zone_mode", "w") as f:
+                    f.write(f"{z1},{z2},{z3},{z4},{brightness}\n")
+            except Exception:
+                pass
+
             res = DAMXSocketClient.send_command("set_per_zone_mode", {
                 "zone1": z1,
                 "zone2": z2,
@@ -455,18 +487,43 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(res).encode("utf-8"))
 
         elif path == "/api/set_effect":
-            eff_map = {"static": 0, "breathing": 1, "neon": 2, "wave": 3, "shifting": 4}
+            eff_map = {
+                "static": 0,
+                "breathing": 1,
+                "neon": 2,
+                "wave": 3,
+                "shifting": 4,
+                "zoom": 5,
+                "meteor": 6,
+                "twinkling": 7
+            }
             eff_name = str(payload.get("effect", "static")).lower()
             mode_num = eff_map.get(eff_name, 0)
             speed = max(0, min(9, int(payload.get("speed", 5))))
             brightness = max(0, min(100, int(payload.get("brightness", collector.rgb_state.get("brightness", 100)))))
             direction = int(payload.get("direction", 1))
             
-            r = int(payload.get("red", 255))
-            g = int(payload.get("green", 46))
-            b = int(payload.get("blue", 77))
+            # Extract color if provided
+            hex_color = payload.get("hex") or payload.get("color")
+            if hex_color:
+                hex_clean = hex_color.lstrip("#").zfill(6)
+                r = int(hex_clean[0:2], 16)
+                g = int(hex_clean[2:4], 16)
+                b = int(hex_clean[4:6], 16)
+            else:
+                r = int(payload.get("red", 255))
+                g = int(payload.get("green", 46))
+                b = int(payload.get("blue", 77))
 
-            log.info(f"Setting RGB Effect: {eff_name} (Mode={mode_num}, Speed={speed}, Brightness={brightness})")
+            log.info(f"Setting RGB Effect: {eff_name} (Mode={mode_num}, Speed={speed}, Brightness={brightness}%, Direction={direction}, RGB={r},{g},{b})")
+            
+            # Direct sysfs fallback
+            try:
+                with open("/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/four_zoned_kb/four_zone_mode", "w") as f:
+                    f.write(f"{mode_num},{speed},{brightness},{direction},{r},{g},{b}\n")
+            except Exception:
+                pass
+
             res = DAMXSocketClient.send_command("set_four_zone_mode", {
                 "mode": mode_num,
                 "speed": speed,

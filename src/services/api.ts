@@ -139,13 +139,15 @@ export const api = {
   async setEffect(
     effect: string,
     speed: number = 5,
-    brightness: number = 100
+    brightness: number = 100,
+    colorHex: string = "ff2e4d",
+    direction: number = 1
   ): Promise<boolean> {
     try {
       const res = await fetch(`${API_BASE}/set_effect`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ effect, speed, brightness }),
+        body: JSON.stringify({ effect, speed, brightness, color: colorHex, direction }),
       });
       return res.ok;
     } catch {

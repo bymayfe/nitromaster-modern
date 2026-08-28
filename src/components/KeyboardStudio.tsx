@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Palette, Sparkles, Sun, Flame, Check } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Palette, Sparkles, Sun, Check, ArrowLeftRight, Wand2 } from "lucide-react";
 import { api } from "../services/api";
 
 export const KeyboardStudio: React.FC = () => {
@@ -11,6 +11,8 @@ export const KeyboardStudio: React.FC = () => {
     4: "#00f59b",
   });
   const [brightness, setBrightness] = useState<number>(100);
+  const [speed, setSpeed] = useState<number>(5);
+  const [direction, setDirection] = useState<number>(1); // 1 = Left to Right, 2 = Right to Left
   const [selectedEffect, setSelectedEffect] = useState<string>("static");
 
   const presetColors = [
@@ -24,21 +26,18 @@ export const KeyboardStudio: React.FC = () => {
   ];
 
   const effects = [
-    { id: "static", name: "Static (Solid)", desc: "Fixed steady color illumination" },
-    { id: "breathing", name: "Breathing", desc: "Smooth pulsing brightness glow" },
-    { id: "wave", name: "Neon Wave", desc: "Dynamic color transition spectrum" },
-    { id: "shifting", name: "Color Shift", desc: "Rhythmic alternating color cycle" },
+    { id: "static", name: "Static (Sabit)", desc: "Seçili renklerde kesintisiz aydınlatma", icon: "✨" },
+    { id: "breathing", name: "Breathing (Nefes)", desc: "Yavaşça parlayıp sönen nabız efekti", icon: "🫁" },
+    { id: "neon", name: "Neon Spectrum", desc: "Sürekli akan RGB renk spektrumu", icon: "🌈" },
+    { id: "wave", name: "RGB Wave (Dalga)", desc: "Klavye boyunca akıcı gökkuşağı dalgası", icon: "🌊" },
+    { id: "shifting", name: "Color Shift (Kayma)", desc: "Bölgeler arası ritmik renk geçişi", icon: "💫" },
+    { id: "zoom", name: "Zoom (Genişleme)", desc: "Merkezden dışa yayılan dinamik halka", icon: "🎯" },
+    { id: "meteor", name: "Meteor Shower", desc: "Klavye üzerinden kayan ışık meteorları", icon: "☄️" },
+    { id: "twinkling", name: "Twinkling Stars", desc: "Rastgele parıldayan yıldız parıltısı", icon: "⭐" },
   ];
 
-  const hexToRgb = (hex: string) => {
-    const r = parseInt(hex.slice(1, 3), 16) || 255;
-    const g = parseInt(hex.slice(3, 5), 16) || 0;
-    const b = parseInt(hex.slice(5, 7), 16) || 77;
-    return { r, g, b };
-  };
-
-  const rgbDebounceTimer = React.useRef<any>(null);
-  const brightnessDebounceTimer = React.useRef<any>(null);
+  const rgbDebounceTimer = useRef<any>(null);
+  const brightnessDebounceTimer = useRef<any>(null);
 
   const handleColorChange = (hex: string, immediate: boolean = false) => {
     // 1. Instant 0ms UI update
@@ -49,34 +48,54 @@ export const KeyboardStudio: React.FC = () => {
     }
 
     // 2. Hardware dispatch
+    const send = () => {
+      if (selectedEffect === "static") {
+        api.setRgb(activeZone === "all" ? "all" : String(activeZone), hex, brightness);
+      } else {
+        api.setEffect(selectedEffect, speed, brightness, hex, direction);
+      }
+    };
+
     if (immediate) {
       if (rgbDebounceTimer.current) clearTimeout(rgbDebounceTimer.current);
-      api.setRgb(activeZone === "all" ? "all" : String(activeZone), hex, brightness);
+      send();
     } else {
       if (rgbDebounceTimer.current) clearTimeout(rgbDebounceTimer.current);
-      rgbDebounceTimer.current = setTimeout(() => {
-        api.setRgb(activeZone === "all" ? "all" : String(activeZone), hex, brightness);
-      }, 50);
+      rgbDebounceTimer.current = setTimeout(send, 50);
     }
   };
 
   const handleBrightnessChange = (val: number) => {
-    // 1. Instant 0ms UI update
     setBrightness(val);
-
-    // 2. Debounced hardware dispatch
     if (brightnessDebounceTimer.current) clearTimeout(brightnessDebounceTimer.current);
     brightnessDebounceTimer.current = setTimeout(() => {
       api.setBrightness(val);
     }, 50);
   };
 
-  const handleEffectChange = (effId: string) => {
+  const handleSpeedChange = (val: number) => {
+    setSpeed(val);
+    const primaryHex = activeZone === "all" ? zoneColors[1] : zoneColors[activeZone];
+    if (selectedEffect !== "static") {
+      api.setEffect(selectedEffect, val, brightness, primaryHex, direction);
+    }
+  };
+
+  const handleDirectionChange = (dir: number) => {
+    setDirection(dir);
+    const primaryHex = activeZone === "all" ? zoneColors[1] : zoneColors[activeZone];
+    if (selectedEffect !== "static") {
+      api.setEffect(selectedEffect, speed, brightness, primaryHex, dir);
+    }
+  };
+
+  const handleEffectSelect = (effId: string) => {
     setSelectedEffect(effId);
+    const primaryHex = activeZone === "all" ? zoneColors[1] : zoneColors[activeZone];
     if (effId === "static") {
-      api.setBrightness(brightness);
+      api.setRgb("all", primaryHex, brightness);
     } else {
-      api.setEffect(effId, 5, brightness);
+      api.setEffect(effId, speed, brightness, primaryHex, direction);
     }
   };
 
@@ -92,24 +111,24 @@ export const KeyboardStudio: React.FC = () => {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveZone("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                 activeZone === "all"
                   ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-glow-purple"
                   : "bg-black/30 text-slate-400 hover:text-white"
               }`}
             >
-              ALL ZONES
+              ALL 4 ZONES
             </button>
           </div>
         </div>
 
         {/* Realistic Interactive 4-Zone Keyboard Map */}
-        <div className="bg-[#05070a] p-4 rounded-2xl border border-white/10 shadow-inner">
-          <p className="text-[10px] font-mono text-slate-500 mb-3 text-center uppercase tracking-widest">
-            Click a zone on the keyboard to customize individual color
+        <div className="bg-[#05070a] p-5 rounded-2xl border border-white/10 shadow-inner">
+          <p className="text-[11px] font-mono text-slate-400 mb-3 text-center uppercase tracking-wider">
+            Dokunarak bölge seçin veya renk paletinden özelleştirin
           </p>
 
-          <div className="grid grid-cols-4 gap-2.5 h-32">
+          <div className="grid grid-cols-4 gap-3 h-32">
             {[1, 2, 3, 4].map((zoneNum) => {
               const isSelected = activeZone === "all" || activeZone === zoneNum;
               const color = zoneColors[zoneNum];
@@ -119,28 +138,28 @@ export const KeyboardStudio: React.FC = () => {
                   key={zoneNum}
                   onClick={() => setActiveZone(zoneNum)}
                   style={{
-                    backgroundColor: `${color}15`,
+                    backgroundColor: `${color}18`,
                     borderColor: isSelected ? color : "rgba(255,255,255,0.08)",
-                    boxShadow: isSelected ? `0 0 20px ${color}50` : "none",
+                    boxShadow: isSelected ? `0 0 25px ${color}60` : "none",
                   }}
-                  className={`relative rounded-xl border-2 p-3 flex flex-col justify-between transition-all duration-300 group hover:scale-[1.02]`}
+                  className="relative rounded-xl border-2 p-3 flex flex-col justify-between transition-all duration-300 group hover:scale-[1.02]"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono font-bold text-white">Zone {zoneNum}</span>
                     <span
-                      className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm"
+                      className="w-4 h-4 rounded-full border border-white/40 shadow-sm"
                       style={{ backgroundColor: color }}
                     />
                   </div>
 
-                  <div className="text-left text-[11px] font-mono text-slate-400">
+                  <div className="text-left text-[11px] font-mono text-slate-300">
                     {zoneNum === 1 && "WASD / QWER"}
                     {zoneNum === 2 && "Center Left"}
                     {zoneNum === 3 && "Center Right"}
                     {zoneNum === 4 && "Numpad / Enter"}
                   </div>
 
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-white/5">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-1 border-t border-white/5">
                     <span>{color.toUpperCase()}</span>
                     {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                   </div>
@@ -151,13 +170,13 @@ export const KeyboardStudio: React.FC = () => {
         </div>
       </div>
 
-      {/* Color Palette & Effects Studio */}
+      {/* Color Palette & Custom Hex */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Preset Palettes & Custom Hex Picker */}
         <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-5">
           <h3 className="text-sm font-bold font-display uppercase text-slate-200 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-400" />
-            Color Palette & Hex Studio
+            Canlı Renk Paleti & Hex Seçici
           </h3>
 
           <div className="grid grid-cols-7 gap-2">
@@ -174,7 +193,7 @@ export const KeyboardStudio: React.FC = () => {
 
           <div className="space-y-2 pt-2 border-t border-white/5">
             <label className="text-xs font-mono text-slate-400 flex items-center justify-between">
-              <span>Custom Color Picker:</span>
+              <span>Özel Renk Seçici:</span>
               <span className="font-bold text-slate-200">
                 {activeZone === "all" ? zoneColors[1] : zoneColors[activeZone]}
               </span>
@@ -183,52 +202,117 @@ export const KeyboardStudio: React.FC = () => {
               type="color"
               value={activeZone === "all" ? zoneColors[1] : zoneColors[activeZone]}
               onChange={(e) => handleColorChange(e.target.value)}
-              className="w-full h-10 rounded-lg cursor-pointer bg-black/40 border border-white/10 p-1"
+              className="w-full h-11 rounded-xl cursor-pointer bg-black/40 border border-white/10 p-1"
             />
           </div>
         </div>
 
-        {/* Lighting Effects & Brightness */}
+        {/* LED Brightness & Effect Sliders */}
         <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-5">
           <h3 className="text-sm font-bold font-display uppercase text-slate-200 flex items-center gap-2">
             <Sun className="w-4 h-4 text-amber-400" />
-            Brightness & Effects
+            Parlaklık, Hız ve Yön Ayarı
           </h3>
 
           {/* Brightness Slider */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-mono text-slate-400">
-              <span>LED Brightness</span>
+              <span>LED Parlaklığı</span>
               <span className="font-bold text-amber-400">{brightness}%</span>
             </div>
             <input
               type="range"
               min="0"
               max="100"
-              step="10"
+              step="5"
               value={brightness}
               onChange={(e) => handleBrightnessChange(Number(e.target.value))}
               className="w-full accent-amber-400 h-2 bg-black/40 rounded-lg cursor-pointer"
             />
           </div>
 
-          {/* Effect Selector */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
-            {effects.map((eff) => (
+          {/* Speed Slider (for animated effects) */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <div className="flex justify-between text-xs font-mono text-slate-400">
+              <span>Efekt Animasyon Hızı</span>
+              <span className="font-bold text-purple-400">Seviye {speed} / 9</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="9"
+              step="1"
+              value={speed}
+              onChange={(e) => handleSpeedChange(Number(e.target.value))}
+              className="w-full accent-purple-400 h-2 bg-black/40 rounded-lg cursor-pointer"
+            />
+          </div>
+
+          {/* Direction Toggle */}
+          <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+            <span className="text-xs font-mono text-slate-400 flex items-center gap-2">
+              <ArrowLeftRight className="w-4 h-4 text-cyan-400" />
+              Dalga Yönü:
+            </span>
+            <div className="flex bg-black/40 p-1 rounded-lg border border-white/5 gap-1">
               <button
-                key={eff.id}
-                onClick={() => handleEffectChange(eff.id)}
-                className={`p-3 rounded-xl text-left border text-xs font-mono transition-all ${
-                  selectedEffect === eff.id
-                    ? "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-glow-purple"
-                    : "bg-black/30 border-white/5 text-slate-400 hover:text-white"
+                onClick={() => handleDirectionChange(1)}
+                className={`px-3 py-1 rounded text-[11px] font-mono font-bold transition-all ${
+                  direction === 1 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-500"
                 }`}
               >
-                <div className="font-bold">{eff.name}</div>
-                <div className="text-[10px] text-slate-500 truncate">{eff.desc}</div>
+                Sol ➔ Sağ
               </button>
-            ))}
+              <button
+                onClick={() => handleDirectionChange(2)}
+                className={`px-3 py-1 rounded text-[11px] font-mono font-bold transition-all ${
+                  direction === 2 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-500"
+                }`}
+              >
+                Sağ ➔ Sol
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* 8 Full Dynamic Lighting Effects Grid */}
+      <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold font-display uppercase text-slate-200 flex items-center gap-2">
+            <Wand2 className="w-4 h-4 text-rose-400" />
+            Donanım Destekli 8 Dinamik Aydınlatma Efekti
+          </h3>
+          <span className="text-xs font-mono text-slate-500">Acer Hardware ENE Controller</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {effects.map((eff) => (
+            <button
+              key={eff.id}
+              onClick={() => handleEffectSelect(eff.id)}
+              className={`p-4 rounded-xl text-left border transition-all duration-200 flex flex-col justify-between group ${
+                selectedEffect === eff.id
+                  ? "bg-rose-500/20 text-white border-rose-500/50 shadow-glow-red scale-[1.02]"
+                  : "bg-black/30 border-white/5 text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl">{eff.icon}</span>
+                {selectedEffect === eff.id && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/30 text-rose-300 uppercase">
+                    Aktif
+                  </span>
+                )}
+              </div>
+              <div>
+                <div className="font-bold text-sm font-display uppercase tracking-wide text-slate-200">
+                  {eff.name}
+                </div>
+                <div className="text-[11px] font-mono text-slate-400 mt-1 leading-snug">{eff.desc}</div>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </div>
