@@ -156,6 +156,11 @@ echo -e "${GREEN}${BOLD}             🎉 NITROMASTER MODERN KURULUMU BAŞARIYLA
 echo -e "${GREEN}${BOLD}══════════════════════════════════════════════════════════════════════════════${RESET}"
 echo -e "${CYAN}Uygulamayı başlatmak için:${RESET}"
 echo -e "  👉 Masaüstü menüsünden: ${BOLD}NitroMaster Control Center${RESET}"
-echo -e "  👉 Terminalden:         ${BOLD}cd $PROJECT_DIR && ./launch.sh${RESET}"
+echo -e "  👉 Terminalden:         ${BOLD}./launch.sh${RESET} veya ${BOLD}./run.sh${RESET}"
+echo -e "  👉 Tamamen kapatmak:    ${BOLD}./stop.sh${RESET}"
 echo -e "  👉 Web Tarayıcısından:  ${BOLD}http://127.0.0.1:16420${RESET}"
 echo ""
+
+# Auto-launch immediately
+echo -e "${CYAN}[🚀] NitroMaster şimdi açılıyor...${RESET}\n"
+"$PROJECT_DIR/launch.sh"
