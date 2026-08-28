@@ -15,19 +15,33 @@
 
 ---
 
-## 📸 Ekran Görüntüleri
+## 📸 Ekran Görüntüleri Galerisi
 
 ### 1. Kontrol Paneli & Canlı Donanım Telemetrisi
-> Anlık CPU/GPU yükü, çekirdek sıcaklıkları, 140W RTX 4070 TGP güç takibi, tek tıkla termal mod değişimi ve gerçek RPM hızında dönen AeroBlade 3D takometreleri.
+> Anlık CPU, GPU ve Sistem/Anakart sıcaklıkları, 140W RTX 4070 TGP güç takibi, tek tıkla termal mod değişimi ve gerçek RPM hızında dönen AeroBlade 3D takometreleri.
 
-![NitroMaster Dashboard](screenshots/dashboard-telemetry.png)
+![NitroMaster Dashboard](screenshots/1-dashboard.png)
 
 ---
 
-### 2. 4-Bölge RGB Klavye Stüdyosu & 8 Dinamik Efekt
+### 2. AeroBlade 3D Çift Fan Kalibrasyonu & Türbinler
+> Çift bağımsız RPM takometresi, gerçek dönüş hızında dönen türbin görselleştirmesi, tek tıkla çift fan senkronizasyonu ve manuel hız kaydırıcıları.
+
+![NitroMaster Fan Tuning](screenshots/2-fan-tuning.png)
+
+---
+
+### 3. 4-Bölge RGB Klavye Stüdyosu & 8 Dinamik Efekt
 > Etkileşimli 4-bölge klavye haritası, canlı Hex renk seçici, 8 donanım destekli dinamik ışıklandırma modu, hız (1-9), yön ve LED parlaklık ayarı.
 
-![NitroMaster RGB Studio](screenshots/rgb-studio.png)
+![NitroMaster RGB Studio](screenshots/3-rgb-studio.png)
+
+---
+
+### 4. Donanım & Pil Koruma Ayarları
+> %80 Pil Koruma Limiti (Battery Care), 165Hz LCD Panel Overdrive, Kapalıyken USB Şarjı, Başlangıç Sesi ve 30sn Klavye Işık Zaman Aşımı.
+
+![NitroMaster Hardware Settings](screenshots/4-hardware-settings.png)
 
 ---
 
@@ -50,9 +64,11 @@ NitroMaster, Acer Nitro serisinin donanım özelliklerini doğrudan Linux çekir
 ## 🌟 Öne Çıkan Özellikler
 
 * 🎨 **Fütüristik Cyber-Dark Tasarım:** Glassmorphism arayüz, neon efektleri, 165Hz akıcı geçişler.
+* 🌐 **Canlı Çift Dil Desteği (TR 🇹🇷 / EN 🇬🇧):** Tek tıkla anında dil değiştirme ve `localStorage` kalıcı hafızası.
 * ⚡ **Canlı Donanım Telemetrisi:**
   * **AMD Ryzen 7 8845HS:** Çekirdek sıcaklığı (°C), saat hızı (GHz), kullanım yüzdesi (%).
   * **NVIDIA GeForce RTX 4070 Laptop:** Sıcaklık (°C), Anlık güç çekimi (**Watt / TGP**), VRAM kullanımı, Core & Memory frekansları.
+  * **ACPI Sistem Sıcaklığı:** Anlık Anakart / VRM sıcaklık takibi (`54°C`).
   * **AeroBlade 3D Çift Fan Göstergeleri:** Fanların anlık gerçek dönüş hızına göre dönen SVG türbin animasyonları.
 * 🔘 **Tek Tıkla Termal Mod Seçimi:**
   * **Quiet:** Sessiz ve serin kullanım.

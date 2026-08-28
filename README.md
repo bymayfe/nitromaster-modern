@@ -15,19 +15,33 @@
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots Gallery
 
-### 1. Dashboard & Live Hardware Telemetry
-> Real-time CPU/GPU load, temperature, 140W RTX 4070 TGP power tracking, one-click thermal profile switching, and dual spinning AeroBlade 3D tachometers.
+### 1. Dashboard & Real-Time Hardware Telemetry
+> Live CPU, GPU, and System/Motherboard temperatures, 140W RTX 4070 TGP power tracking, one-click thermal profile switching, and real RPM spinning AeroBlade 3D turbines.
 
-![NitroMaster Dashboard](screenshots/dashboard-telemetry.png)
+![NitroMaster Dashboard](screenshots/1-dashboard.png)
 
 ---
 
-### 2. 4-Zone RGB Lighting Studio & 8 Hardware Effects
+### 2. AeroBlade 3D Fan Calibration & Dual Turbines
+> Dual independent RPM tachometers, spinning turbine visualization, single-toggle fan synchronization, and manual speed sliders.
+
+![NitroMaster Fan Tuning](screenshots/2-fan-tuning.png)
+
+---
+
+### 3. 4-Zone RGB Lighting Studio & 8 Dynamic Effects
 > Interactive 4-zone keyboard map, custom hex palette, 8 hardware lighting animations, speed (1-9), direction, and LED brightness slider.
 
-![NitroMaster RGB Studio](screenshots/rgb-studio.png)
+![NitroMaster RGB Studio](screenshots/3-rgb-studio.png)
+
+---
+
+### 4. Hardware & Battery Protection
+> 80% Battery Care Mode, 165Hz LCD Panel Overdrive, Power-off USB charging, Boot sound, and Backlight auto-sleep timeout.
+
+![NitroMaster Hardware Settings](screenshots/4-hardware-settings.png)
 
 ---
 
@@ -50,16 +64,18 @@ NitroMaster communicates directly with Acer Nitro Embedded Controllers (EC) thro
 ## 🌟 Key Features
 
 * 🎨 **Cyber-Dark Glassmorphism Design:** Modern neon aesthetic, responsive layout, 165Hz smooth UI transitions.
+* 🌐 **Live Bilingual Interface (EN 🇬🇧 / TR 🇹🇷):** One-click instant language switching with persistent `localStorage` memory.
 * ⚡ **Real-Time Telemetry & Hardware Sensors:**
   * **AMD Ryzen 7 8845HS:** Core temperature (°C), Clock speed (GHz), and % CPU load.
   * **NVIDIA GeForce RTX 4070 Laptop:** Real-time Power draw (**Watts / TGP**), Core & Memory MHz, VRAM usage.
+  * **ACPI System Temperature:** Real-time Motherboard / VRM temperature readout (`54°C`).
   * **AeroBlade 3D Dual Fans:** Dynamic spinning SVG turbines synced to real RPM with live status tags.
 * 🔘 **Instant Thermal & Power Profiles:**
   * **Quiet:** Silent operation, low TDP, whisper fans.
   * **Balanced:** Smart dynamic fan curve for everyday workflow.
   * **Performance:** 75% target fan curve, high clock boosts.
   * **Turbo:** Full 140W RTX 4070 TGP boost, 100% max fans.
-  * **ECO (Saver):** Energy saver profile for maximum battery longevity.
+  * **ECO (Saver):** Energy saver profile for maximum battery longevity on DC.
 * 🌈 **4-Zone RGB Keyboard Lighting Studio:**
   * Interactive 4-zone layout (WASD, Center-Left, Center-Right, Numpad).
   * Color presets + custom hex color picker.
