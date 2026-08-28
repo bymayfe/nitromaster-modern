@@ -1,9 +1,11 @@
 import React from "react";
-import { Cpu, Activity, Disc, Zap } from "lucide-react";
+import { Cpu, Activity, Disc } from "lucide-react";
 import { SystemStatus } from "../services/api";
+import { Language, translations } from "../i18n/translations";
 
 interface TelemetryGaugesProps {
   status: SystemStatus | null;
+  lang?: Language;
 }
 
 const FanTurbineGauge: React.FC<{
@@ -11,7 +13,8 @@ const FanTurbineGauge: React.FC<{
   color: "cyan" | "purple";
   label: string;
   subLabel: string;
-}> = ({ rpm, color, label, subLabel }) => {
+  t: typeof translations["tr"];
+}> = ({ rpm, color, label, subLabel, t }) => {
   const isSpinning = rpm > 0;
   const duration = isSpinning ? Math.max(0.12, Math.min(2.0, 600 / Math.max(rpm, 300))) : 0;
   const pct = Math.min(100, Math.round((rpm / 5500) * 100));
@@ -44,7 +47,7 @@ const FanTurbineGauge: React.FC<{
           </div>
         </div>
         <span className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border font-bold ${colorClass}`}>
-          %{pct} HIZ
+          %{pct} {t.speed.toUpperCase()}
         </span>
       </div>
 
@@ -115,22 +118,23 @@ const FanTurbineGauge: React.FC<{
 
       {/* Dynamic Status Text */}
       <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono">
-        <span className="text-slate-500">Durum:</span>
+        <span className="text-slate-500">{t.coolingStatus}:</span>
         <span className="text-slate-300 font-bold">
           {rpm === 0
-            ? "PASİF (0 RPM)"
+            ? t.statusPassive
             : rpm < 2600
-            ? "SESSİZ MOD"
+            ? t.statusWhisper
             : rpm < 4300
-            ? "DİNAMİK SOĞUTMA"
-            : "TURBO HIZ"}
+            ? t.statusDynamic
+            : t.statusTurbo}
         </span>
       </div>
     </div>
   );
 };
 
-export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status }) => {
+export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status, lang = "tr" }) => {
+  const t = translations[lang];
   const telemetry = status?.telemetry;
 
   const cpu = telemetry?.cpu || { usage: 0, temp: 45, freq_mhz: 3800, model: "AMD Ryzen 7 8845HS" };
@@ -162,14 +166,14 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status }) => {
               <Cpu className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider font-display text-white">CPU Telemetry</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider font-display text-white">{t.cpuTelemetry}</h3>
               <p className="text-[10px] font-mono text-slate-400 truncate max-w-[120px]">
                 {cpu.model.replace("w/ Radeon 780M Graphics", "")}
               </p>
             </div>
           </div>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">
-            {cpu.usage}% Load
+            {cpu.usage}% {t.load}
           </span>
         </div>
 
@@ -200,11 +204,11 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status }) => {
         {/* Bottom Stats */}
         <div className="pt-3 border-t border-white/5 grid grid-cols-2 gap-2 text-center text-xs font-mono">
           <div className="bg-black/30 p-2 rounded-lg">
-            <p className="text-[10px] text-slate-500 uppercase">Usage</p>
+            <p className="text-[10px] text-slate-500 uppercase">{t.load}</p>
             <p className="font-bold text-slate-200">{cpu.usage}%</p>
           </div>
           <div className="bg-black/30 p-2 rounded-lg">
-            <p className="text-[10px] text-slate-500 uppercase">Freq</p>
+            <p className="text-[10px] text-slate-500 uppercase">{t.freq}</p>
             <p className="font-bold text-slate-200">{(cpu.freq_mhz / 1000).toFixed(2)} GHz</p>
           </div>
         </div>
@@ -218,7 +222,7 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status }) => {
               <Activity className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider font-display text-white">GPU Telemetry</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider font-display text-white">{t.gpuTelemetry}</h3>
               <p className="text-[10px] font-mono text-slate-400 truncate max-w-[120px]">RTX 4070 Laptop</p>
             </div>
           </div>
@@ -254,13 +258,13 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status }) => {
         {/* Bottom Stats */}
         <div className="pt-3 border-t border-white/5 grid grid-cols-2 gap-2 text-center text-xs font-mono">
           <div className="bg-black/30 p-2 rounded-lg">
-            <p className="text-[10px] text-slate-500 uppercase">VRAM</p>
+            <p className="text-[10px] text-slate-500 uppercase">{t.vram}</p>
             <p className="font-bold text-slate-200">
               {(gpu.vram_used_mb / 1024).toFixed(1)} / {(gpu.vram_total_mb / 1024).toFixed(0)} GB
             </p>
           </div>
           <div className="bg-black/30 p-2 rounded-lg">
-            <p className="text-[10px] text-slate-500 uppercase">Core Clock</p>
+            <p className="text-[10px] text-slate-500 uppercase">{t.coreClock}</p>
             <p className="font-bold text-slate-200">{gpu.clock_mhz} MHz</p>
           </div>
         </div>
@@ -270,16 +274,18 @@ export const TelemetryGauges: React.FC<TelemetryGaugesProps> = ({ status }) => {
       <FanTurbineGauge
         rpm={fans.cpu_rpm}
         color="cyan"
-        label="CPU Fan 1"
-        subLabel="AeroBlade 3D Metal"
+        label={t.cpuFan}
+        subLabel={t.aerobladeMetal}
+        t={t}
       />
 
       {/* 4. GPU Fan Tachometer with Rotating AeroBlade Turbine */}
       <FanTurbineGauge
         rpm={fans.gpu_rpm}
         color="purple"
-        label="GPU Fan 2"
-        subLabel="CoolBoost Dual"
+        label={t.gpuFan}
+        subLabel={t.coolboostDual}
+        t={t}
       />
     </div>
   );

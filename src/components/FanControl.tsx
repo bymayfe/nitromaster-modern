@@ -1,12 +1,16 @@
 import React, { useState, useRef, useCallback } from "react";
-import { Disc, Zap, Sliders, ShieldAlert, Link, Unlink, Wind, Gauge } from "lucide-react";
+import { Disc, Sliders, Link, Unlink } from "lucide-react";
 import { api, SystemStatus } from "../services/api";
+import { Language, translations } from "../i18n/translations";
 
 interface FanControlProps {
   status: SystemStatus | null;
+  lang?: Language;
 }
 
-export const FanControl: React.FC<FanControlProps> = ({ status }) => {
+export const FanControl: React.FC<FanControlProps> = ({ status, lang = "tr" }) => {
+  const t = translations[lang];
+
   const [mode, setMode] = useState<"auto" | "max" | "custom">("auto");
   const [cpuPercent, setCpuPercent] = useState<number>(50);
   const [gpuPercent, setGpuPercent] = useState<number>(50);
@@ -59,6 +63,13 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
     return `${dur}s`;
   };
 
+  const getStatusText = (rpm: number) => {
+    if (rpm === 0) return t.statusPassive;
+    if (rpm < 2600) return t.statusWhisper;
+    if (rpm < 4300) return t.statusDynamic;
+    return t.statusTurbo;
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner & Mode Switcher */}
@@ -66,11 +77,9 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
         <div>
           <h2 className="text-xl font-bold font-display uppercase text-white flex items-center gap-3">
             <Disc className="w-6 h-6 text-cyan-400" />
-            AeroBlade 3D Çift Fan Kalibrasyonu
+            {t.fanHeaderTitle}
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            İşlemci (CPU) ve Ekran Kartı (GPU) fan hızlarını gerçek zamanlı kalibre edin veya tam güç kilitleyin.
-          </p>
+          <p className="text-xs text-slate-400 mt-1">{t.fanHeaderDesc}</p>
         </div>
 
         {/* Mode Selector Buttons */}
@@ -83,7 +92,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            AUTO (Otomatik)
+            {t.btnAuto}
           </button>
           <button
             onClick={() => handleModeChange("max")}
@@ -93,7 +102,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            MAX (%100 Turbo)
+            {t.btnMax}
           </button>
           <button
             onClick={() => handleModeChange("custom")}
@@ -103,7 +112,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            CUSTOM (Manuel)
+            {t.btnCustom}
           </button>
         </div>
       </div>
@@ -121,14 +130,14 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 />
               </div>
               <div>
-                <h3 className="text-base font-bold font-display uppercase text-white">CPU Soğutma Fanı</h3>
+                <h3 className="text-base font-bold font-display uppercase text-white">{t.cpuFan}</h3>
                 <p className="text-xs font-mono text-cyan-400 glow-text-cyan font-bold">
-                  {fans.cpu_rpm.toLocaleString()} RPM ({Math.round((fans.cpu_rpm / 5500) * 100)}% Hız)
+                  {fans.cpu_rpm.toLocaleString()} RPM ({Math.round((fans.cpu_rpm / 5500) * 100)}% {t.speed})
                 </p>
               </div>
             </div>
             <span className="text-xs font-mono px-3 py-1 rounded-lg bg-black/40 text-slate-300 border border-white/10">
-              Maks: 5,500 RPM
+              {t.maxLimit}
             </span>
           </div>
 
@@ -186,7 +195,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 {fans.cpu_rpm.toLocaleString()} RPM
               </span>
               <span className="text-[11px] font-mono text-slate-400 block tracking-widest uppercase mt-0.5">
-                {fans.cpu_rpm === 0 ? "0 dB PASİF MOD" : fans.cpu_rpm < 2600 ? "SESSİZ FISILTI MODU" : fans.cpu_rpm < 4300 ? "DİNAMİK SOĞUTMA" : "AERO TURBO GÜÇ"}
+                {getStatusText(fans.cpu_rpm)}
               </span>
             </div>
           </div>
@@ -196,7 +205,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
             <div className="flex justify-between text-xs font-mono text-slate-300">
               <span className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-cyan-400" />
-                Manuel CPU Fan Hızı
+                {t.manualCpuSpeed}
               </span>
               <span className="font-bold text-cyan-400">%{mode === "custom" ? cpuPercent : mode === "max" ? 100 : Math.round((fans.cpu_rpm / 5500) * 100)}</span>
             </div>
@@ -223,14 +232,14 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 />
               </div>
               <div>
-                <h3 className="text-base font-bold font-display uppercase text-white">GPU Soğutma Fanı</h3>
+                <h3 className="text-base font-bold font-display uppercase text-white">{t.gpuFan}</h3>
                 <p className="text-xs font-mono text-purple-400 glow-text-purple font-bold">
-                  {fans.gpu_rpm.toLocaleString()} RPM ({Math.round((fans.gpu_rpm / 5500) * 100)}% Hız)
+                  {fans.gpu_rpm.toLocaleString()} RPM ({Math.round((fans.gpu_rpm / 5500) * 100)}% {t.speed})
                 </p>
               </div>
             </div>
             <span className="text-xs font-mono px-3 py-1 rounded-lg bg-black/40 text-slate-300 border border-white/10">
-              Maks: 5,500 RPM
+              {t.maxLimit}
             </span>
           </div>
 
@@ -288,7 +297,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
                 {fans.gpu_rpm.toLocaleString()} RPM
               </span>
               <span className="text-[11px] font-mono text-slate-400 block tracking-widest uppercase mt-0.5">
-                {fans.gpu_rpm === 0 ? "0 dB PASİF MOD" : fans.gpu_rpm < 2600 ? "SESSİZ FISILTI MODU" : fans.gpu_rpm < 4300 ? "DİNAMİK SOĞUTMA" : "AERO TURBO GÜÇ"}
+                {getStatusText(fans.gpu_rpm)}
               </span>
             </div>
           </div>
@@ -298,7 +307,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
             <div className="flex justify-between text-xs font-mono text-slate-300">
               <span className="flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-purple-400" />
-                Manuel GPU Fan Hızı
+                {t.manualGpuSpeed}
               </span>
               <span className="font-bold text-purple-400">%{mode === "custom" ? gpuPercent : mode === "max" ? 100 : Math.round((fans.gpu_rpm / 5500) * 100)}</span>
             </div>
@@ -320,8 +329,8 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
         <div className="flex items-center gap-3">
           {syncFans ? <Link className="w-5 h-5 text-emerald-400" /> : <Unlink className="w-5 h-5 text-slate-500" />}
           <div>
-            <h4 className="text-xs font-bold font-mono text-white">Çift Fanı Senkronize Et (Sync CPU & GPU)</h4>
-            <p className="text-[11px] text-slate-400">CPU ve GPU fan hızlarını tek bir kaydırıcıyla kilitli kontrol edin.</p>
+            <h4 className="text-xs font-bold font-mono text-white">{t.syncFansTitle}</h4>
+            <p className="text-[11px] text-slate-400">{t.syncFansDesc}</p>
           </div>
         </div>
         <button
@@ -330,7 +339,7 @@ export const FanControl: React.FC<FanControlProps> = ({ status }) => {
             syncFans ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "bg-black/40 text-slate-500"
           }`}
         >
-          {syncFans ? "KİLİTLİ (AÇIK)" : "BAĞIMSIZ"}
+          {syncFans ? t.syncLocked : t.syncIndependent}
         </button>
       </div>
     </div>

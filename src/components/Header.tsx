@@ -1,14 +1,25 @@
 import React from "react";
-import { Zap, BatteryCharging, Battery, Plug, Cpu, Disc, Palette, Sliders, ShieldCheck } from "lucide-react";
+import { Plug, Battery, Cpu, Disc, Palette, Sliders, Globe } from "lucide-react";
 import { SystemStatus } from "../services/api";
+import { NitroLogo } from "./NitroLogo";
+import { Language, translations } from "../i18n/translations";
 
 interface HeaderProps {
   status: SystemStatus | null;
   activeTab: "dashboard" | "fans" | "rgb" | "settings";
   setActiveTab: (tab: "dashboard" | "fans" | "rgb" | "settings") => void;
+  lang: Language;
+  setLang: (lang: Language) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab }) => {
+export const Header: React.FC<HeaderProps> = ({
+  status,
+  activeTab,
+  setActiveTab,
+  lang,
+  setLang,
+}) => {
+  const t = translations[lang];
   const onAc = status?.telemetry.power.on_ac ?? true;
   const batteryPct = status?.telemetry.power.battery_pct ?? 100;
   const currentProfile = status?.settings.thermal_profile?.current || "balanced";
@@ -34,10 +45,10 @@ export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab 
 
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-white/10 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-      {/* Brand & Model */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center shadow-glow-red">
-          <Zap className="w-6 h-6 text-white animate-pulse" />
+      {/* Brand & Dynamic Model */}
+      <div className="flex items-center gap-3.5">
+        <div className="w-11 h-11 rounded-2xl bg-black/50 border border-white/15 flex items-center justify-center shadow-glow-red hover:scale-105 transition-transform">
+          <NitroLogo className="w-8 h-8" />
         </div>
         <div>
           <div className="flex items-center gap-2">
@@ -46,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab 
             </h1>
           </div>
           <p className="text-xs font-mono text-slate-400">
-            {status?.telemetry.system?.full_name || "Acer Nitro"} • {status?.telemetry.system?.os_name || "Linux"}
+            {status?.telemetry.system?.full_name || "Acer Nitro 16"} • {status?.telemetry.system?.os_name || "Linux"}
             {status?.telemetry.system?.bios ? ` (BIOS ${status.telemetry.system.bios})` : ""}
           </p>
         </div>
@@ -58,53 +69,63 @@ export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab 
           onClick={() => setActiveTab("dashboard")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
             activeTab === "dashboard"
-              ? "bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-glow-red"
+              ? "bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-glow-red font-bold"
               : "text-slate-400 hover:text-white hover:bg-white/5"
           }`}
         >
           <Cpu className="w-4 h-4" />
-          Dashboard
+          {t.tabDashboard}
         </button>
 
         <button
           onClick={() => setActiveTab("fans")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
             activeTab === "fans"
-              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-glow-cyan"
+              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-glow-cyan font-bold"
               : "text-slate-400 hover:text-white hover:bg-white/5"
           }`}
         >
           <Disc className="w-4 h-4" />
-          Fan Tuning
+          {t.tabFans}
         </button>
 
         <button
           onClick={() => setActiveTab("rgb")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
             activeTab === "rgb"
-              ? "bg-purple-500/20 text-purple-400 border border-purple-500/40 shadow-glow-purple"
+              ? "bg-purple-500/20 text-purple-400 border border-purple-500/40 shadow-glow-purple font-bold"
               : "text-slate-400 hover:text-white hover:bg-white/5"
           }`}
         >
           <Palette className="w-4 h-4" />
-          RGB Studio
+          {t.tabRgb}
         </button>
 
         <button
           onClick={() => setActiveTab("settings")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
             activeTab === "settings"
-              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-glow-green"
+              ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-glow-amber font-bold"
               : "text-slate-400 hover:text-white hover:bg-white/5"
           }`}
         >
           <Sliders className="w-4 h-4" />
-          Hardware
+          {t.tabSettings}
         </button>
       </nav>
 
-      {/* System Status Badges */}
+      {/* System Status Badges & Language Switcher */}
       <div className="flex items-center gap-3">
+        {/* Language Switcher Button */}
+        <button
+          onClick={() => setLang(lang === "tr" ? "en" : "tr")}
+          title="Switch Language / Dili Değiştir"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 hover:border-white/30 text-xs font-mono font-bold transition-all text-slate-300 hover:text-white group"
+        >
+          <Globe className="w-3.5 h-3.5 text-rose-400 group-hover:rotate-45 transition-transform" />
+          <span>{lang === "tr" ? "🇹🇷 TR" : "🇬🇧 EN"}</span>
+        </button>
+
         {/* Active Thermal Badge */}
         <div className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-semibold ${badge.color}`}>
           {badge.label}
@@ -120,7 +141,9 @@ export const Header: React.FC<HeaderProps> = ({ status, activeTab, setActiveTab 
           ) : (
             <>
               <Battery className="w-4 h-4 text-amber-400" />
-              <span className="text-amber-400 font-bold">{batteryPct}% ({status?.telemetry.power?.battery_status || "Discharging"})</span>
+              <span className="text-amber-400 font-bold">
+                {batteryPct}% ({status?.telemetry.power?.battery_status || t.batteryDischarging})
+              </span>
             </>
           )}
         </div>

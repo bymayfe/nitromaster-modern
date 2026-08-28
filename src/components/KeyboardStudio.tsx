@@ -1,8 +1,15 @@
 import React, { useState, useRef } from "react";
 import { Palette, Sparkles, Sun, Check, ArrowLeftRight, Wand2 } from "lucide-react";
 import { api } from "../services/api";
+import { Language, translations } from "../i18n/translations";
 
-export const KeyboardStudio: React.FC = () => {
+interface KeyboardStudioProps {
+  lang?: Language;
+}
+
+export const KeyboardStudio: React.FC<KeyboardStudioProps> = ({ lang = "tr" }) => {
+  const t = translations[lang];
+
   const [activeZone, setActiveZone] = useState<number | "all">("all");
   const [zoneColors, setZoneColors] = useState<Record<number, string>>({
     1: "#ff2e4d",
@@ -26,14 +33,14 @@ export const KeyboardStudio: React.FC = () => {
   ];
 
   const effects = [
-    { id: "static", name: "Static (Sabit)", desc: "Seçili renklerde kesintisiz aydınlatma", icon: "✨" },
-    { id: "breathing", name: "Breathing (Nefes)", desc: "Yavaşça parlayıp sönen nabız efekti", icon: "🫁" },
-    { id: "neon", name: "Neon Spectrum", desc: "Sürekli akan RGB renk spektrumu", icon: "🌈" },
-    { id: "wave", name: "RGB Wave (Dalga)", desc: "Klavye boyunca akıcı gökkuşağı dalgası", icon: "🌊" },
-    { id: "shifting", name: "Color Shift (Kayma)", desc: "Bölgeler arası ritmik renk geçişi", icon: "💫" },
-    { id: "zoom", name: "Zoom (Genişleme)", desc: "Merkezden dışa yayılan dinamik halka", icon: "🎯" },
-    { id: "meteor", name: "Meteor Shower", desc: "Klavye üzerinden kayan ışık meteorları", icon: "☄️" },
-    { id: "twinkling", name: "Twinkling Stars", desc: "Rastgele parıldayan yıldız parıltısı", icon: "⭐" },
+    { id: "static", name: t.effStatic, desc: t.effStaticDesc, icon: "✨" },
+    { id: "breathing", name: t.effBreathing, desc: t.effBreathingDesc, icon: "🫁" },
+    { id: "neon", name: t.effNeon, desc: t.effNeonDesc, icon: "🌈" },
+    { id: "wave", name: t.effWave, desc: t.effWaveDesc, icon: "🌊" },
+    { id: "shifting", name: t.effShifting, desc: t.effShiftingDesc, icon: "💫" },
+    { id: "zoom", name: t.effZoom, desc: t.effZoomDesc, icon: "🎯" },
+    { id: "meteor", name: t.effMeteor, desc: t.effMeteorDesc, icon: "☄️" },
+    { id: "twinkling", name: t.effTwinkling, desc: t.effTwinklingDesc, icon: "⭐" },
   ];
 
   const rgbDebounceTimer = useRef<any>(null);
@@ -99,6 +106,21 @@ export const KeyboardStudio: React.FC = () => {
     }
   };
 
+  const getZoneLabel = (zoneNum: number) => {
+    switch (zoneNum) {
+      case 1:
+        return t.zone1;
+      case 2:
+        return t.zone2;
+      case 3:
+        return t.zone3;
+      case 4:
+        return t.zone4;
+      default:
+        return `Zone ${zoneNum}`;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Visual Keyboard 4-Zone Canvas */}
@@ -106,7 +128,7 @@ export const KeyboardStudio: React.FC = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold font-display uppercase text-white flex items-center gap-3">
             <Palette className="w-6 h-6 text-purple-400" />
-            4-Zone RGB Keyboard Lighting Studio
+            {t.rgbTitle}
           </h2>
           <div className="flex gap-2">
             <button
@@ -117,7 +139,7 @@ export const KeyboardStudio: React.FC = () => {
                   : "bg-black/30 text-slate-400 hover:text-white"
               }`}
             >
-              ALL 4 ZONES
+              {t.allZonesBtn}
             </button>
           </div>
         </div>
@@ -125,7 +147,7 @@ export const KeyboardStudio: React.FC = () => {
         {/* Realistic Interactive 4-Zone Keyboard Map */}
         <div className="bg-[#05070a] p-5 rounded-2xl border border-white/10 shadow-inner">
           <p className="text-[11px] font-mono text-slate-400 mb-3 text-center uppercase tracking-wider">
-            Dokunarak bölge seçin veya renk paletinden özelleştirin
+            {t.keyboardHint}
           </p>
 
           <div className="grid grid-cols-4 gap-3 h-32">
@@ -152,11 +174,8 @@ export const KeyboardStudio: React.FC = () => {
                     />
                   </div>
 
-                  <div className="text-left text-[11px] font-mono text-slate-300">
-                    {zoneNum === 1 && "WASD / QWER"}
-                    {zoneNum === 2 && "Center Left"}
-                    {zoneNum === 3 && "Center Right"}
-                    {zoneNum === 4 && "Numpad / Enter"}
+                  <div className="text-left text-[11px] font-mono text-slate-300 truncate">
+                    {getZoneLabel(zoneNum)}
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-1 border-t border-white/5">
@@ -176,7 +195,7 @@ export const KeyboardStudio: React.FC = () => {
         <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-5">
           <h3 className="text-sm font-bold font-display uppercase text-slate-200 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-400" />
-            Canlı Renk Paleti & Hex Seçici
+            {t.paletteTitle}
           </h3>
 
           <div className="grid grid-cols-7 gap-2">
@@ -193,7 +212,7 @@ export const KeyboardStudio: React.FC = () => {
 
           <div className="space-y-2 pt-2 border-t border-white/5">
             <label className="text-xs font-mono text-slate-400 flex items-center justify-between">
-              <span>Özel Renk Seçici:</span>
+              <span>{t.customPicker}</span>
               <span className="font-bold text-slate-200">
                 {activeZone === "all" ? zoneColors[1] : zoneColors[activeZone]}
               </span>
@@ -211,13 +230,13 @@ export const KeyboardStudio: React.FC = () => {
         <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-5">
           <h3 className="text-sm font-bold font-display uppercase text-slate-200 flex items-center gap-2">
             <Sun className="w-4 h-4 text-amber-400" />
-            Parlaklık, Hız ve Yön Ayarı
+            {t.slidersTitle}
           </h3>
 
           {/* Brightness Slider */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-mono text-slate-400">
-              <span>LED Parlaklığı</span>
+              <span>{t.ledBrightness}</span>
               <span className="font-bold text-amber-400">{brightness}%</span>
             </div>
             <input
@@ -234,8 +253,8 @@ export const KeyboardStudio: React.FC = () => {
           {/* Speed Slider (for animated effects) */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <div className="flex justify-between text-xs font-mono text-slate-400">
-              <span>Efekt Animasyon Hızı</span>
-              <span className="font-bold text-purple-400">Seviye {speed} / 9</span>
+              <span>{t.animSpeed}</span>
+              <span className="font-bold text-purple-400">{t.speedLevel} {speed} / 9</span>
             </div>
             <input
               type="range"
@@ -252,7 +271,7 @@ export const KeyboardStudio: React.FC = () => {
           <div className="pt-2 border-t border-white/5 flex items-center justify-between">
             <span className="text-xs font-mono text-slate-400 flex items-center gap-2">
               <ArrowLeftRight className="w-4 h-4 text-cyan-400" />
-              Dalga Yönü:
+              {t.waveDirection}
             </span>
             <div className="flex bg-black/40 p-1 rounded-lg border border-white/5 gap-1">
               <button
@@ -261,7 +280,7 @@ export const KeyboardStudio: React.FC = () => {
                   direction === 1 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-500"
                 }`}
               >
-                Sol ➔ Sağ
+                {t.leftToRight}
               </button>
               <button
                 onClick={() => handleDirectionChange(2)}
@@ -269,7 +288,7 @@ export const KeyboardStudio: React.FC = () => {
                   direction === 2 ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40" : "text-slate-500"
                 }`}
               >
-                Sağ ➔ Sol
+                {t.rightToLeft}
               </button>
             </div>
           </div>
@@ -281,9 +300,9 @@ export const KeyboardStudio: React.FC = () => {
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold font-display uppercase text-slate-200 flex items-center gap-2">
             <Wand2 className="w-4 h-4 text-rose-400" />
-            Donanım Destekli 8 Dinamik Aydınlatma Efekti
+            {t.effectsTitle}
           </h3>
-          <span className="text-xs font-mono text-slate-500">Acer Hardware ENE Controller</span>
+          <span className="text-xs font-mono text-slate-500">{t.hardwareController}</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -301,7 +320,7 @@ export const KeyboardStudio: React.FC = () => {
                 <span className="text-2xl">{eff.icon}</span>
                 {selectedEffect === eff.id && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/30 text-rose-300 uppercase">
-                    Aktif
+                    {t.activeEffect}
                   </span>
                 )}
               </div>
