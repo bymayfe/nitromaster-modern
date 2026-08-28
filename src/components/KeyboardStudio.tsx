@@ -38,21 +38,27 @@ export const KeyboardStudio: React.FC = () => {
   };
 
   const handleColorChange = async (hex: string) => {
-    const { r, g, b } = hexToRgb(hex);
     if (activeZone === "all") {
       setZoneColors({ 1: hex, 2: hex, 3: hex, 4: hex });
-      await api.setRgb("all", r, g, b, brightness, selectedEffect);
+      await api.setRgb("all", hex, brightness);
     } else {
       setZoneColors((prev) => ({ ...prev, [activeZone]: hex }));
-      await api.setRgb(String(activeZone), r, g, b, brightness, selectedEffect);
+      await api.setRgb(String(activeZone), hex, brightness);
     }
   };
 
   const handleBrightnessChange = async (val: number) => {
     setBrightness(val);
-    const primaryHex = activeZone === "all" ? zoneColors[1] : zoneColors[activeZone];
-    const { r, g, b } = hexToRgb(primaryHex);
-    await api.setRgb(activeZone === "all" ? "all" : String(activeZone), r, g, b, val, selectedEffect);
+    await api.setBrightness(val);
+  };
+
+  const handleEffectChange = async (effId: string) => {
+    setSelectedEffect(effId);
+    if (effId === "static") {
+      await api.setBrightness(brightness);
+    } else {
+      await api.setEffect(effId, 5, brightness);
+    }
   };
 
   return (
@@ -192,7 +198,7 @@ export const KeyboardStudio: React.FC = () => {
             {effects.map((eff) => (
               <button
                 key={eff.id}
-                onClick={() => setSelectedEffect(eff.id)}
+                onClick={() => handleEffectChange(eff.id)}
                 className={`p-3 rounded-xl text-left border text-xs font-mono transition-all ${
                   selectedEffect === eff.id
                     ? "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-glow-purple"

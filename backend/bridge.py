@@ -50,6 +50,15 @@ class TelemetryCollector:
         self.last_cpu_times = None
         self.last_cpu_check = 0
         self.cpu_usage = 0.0
+        self.rgb_state = {
+            "zone1": "ff2e4d",
+            "zone2": "00e5ff",
+            "zone3": "b800ff",
+            "zone4": "00f59b",
+            "brightness": 100,
+            "effect": "static",
+            "speed": 5
+        }
 
     def get_cpu_usage(self) -> float:
         try:
@@ -339,39 +348,91 @@ class NitroMasterHTTPHandler(BaseHTTPRequestHandler):
             self._set_headers(200)
             self.wfile.write(json.dumps(res).encode("utf-8"))
 
-        elif path == "/api/set_fans":
-            cpu = int(payload.get("cpu", 0))
-            gpu = int(payload.get("gpu", 0))
-            log.info(f"Setting fan speeds: CPU={cpu}%, GPU={gpu}%")
-            res = DAMXSocketClient.send_command("set_fan_speed", {"cpu": cpu, "gpu": gpu})
+        elif path == "/api/set_brightness":
+            brightness = max(0, min(100, int(payload.get("brightness", 100))))
+            collector.rgb_state["brightness"] = brightness
+            
+            z1 = collector.rgb_state["zone1"].lstrip("#").zfill(6)[:6]
+            z2 = collector.rgb_state["zone2"].lstrip("#").zfill(6)[:6]
+            z3 = collector.rgb_state["zone3"].lstrip("#").zfill(6)[:6]
+            z4 = collector.rgb_state["zone4"].lstrip("#").zfill(6)[:6]
+            
+            log.info(f"Setting LED brightness: {brightness}% for zones ({z1}, {z2}, {z3}, {z4})")
+            res = DAMXSocketClient.send_command("set_per_zone_mode", {
+                "zone1": z1,
+                "zone2": z2,
+                "zone3": z3,
+                "zone4": z4,
+                "brightness": brightness
+            })
             self._set_headers(200)
             self.wfile.write(json.dumps(res).encode("utf-8"))
 
         elif path == "/api/set_rgb":
-            zone = payload.get("zone", "all")
-            red = int(payload.get("red", 255))
-            green = int(payload.get("green", 0))
-            blue = int(payload.get("blue", 77))
-            brightness = int(payload.get("brightness", 100))
-            effect = payload.get("effect", "static")
-            
-            # Send to DAMX 4-zone or per-zone
-            if zone == "all":
-                res = DAMXSocketClient.send_command("set_four_zone_mode", {
-                    "zone1": f"{red:02x}{green:02x}{blue:02x}",
-                    "zone2": f"{red:02x}{green:02x}{blue:02x}",
-                    "zone3": f"{red:02x}{green:02x}{blue:02x}",
-                    "zone4": f"{red:02x}{green:02x}{blue:02x}",
-                    "brightness": brightness
-                })
+            zone = str(payload.get("zone", "all"))
+            brightness = max(0, min(100, int(payload.get("brightness", collector.rgb_state.get("brightness", 100)))))
+            collector.rgb_state["brightness"] = brightness
+
+            # Clean Hex color
+            hex_color = payload.get("hex") or payload.get("color")
+            if not hex_color and "red" in payload:
+                r = int(payload.get("red", 255))
+                g = int(payload.get("green", 0))
+                b = int(payload.get("blue", 77))
+                hex_color = f"{r:02x}{g:02x}{b:02x}"
+            elif hex_color:
+                hex_color = hex_color.lstrip("#").zfill(6)[:6]
             else:
-                res = DAMXSocketClient.send_command("set_per_zone_mode", {
-                    "zone": int(zone),
-                    "red": red,
-                    "green": green,
-                    "blue": blue,
-                    "brightness": brightness
-                })
+                hex_color = "ff2e4d"
+
+            if zone == "all":
+                collector.rgb_state["zone1"] = hex_color
+                collector.rgb_state["zone2"] = hex_color
+                collector.rgb_state["zone3"] = hex_color
+                collector.rgb_state["zone4"] = hex_color
+            else:
+                zone_key = f"zone{zone}"
+                if zone_key in collector.rgb_state:
+                    collector.rgb_state[zone_key] = hex_color
+
+            z1 = collector.rgb_state["zone1"].lstrip("#").zfill(6)[:6]
+            z2 = collector.rgb_state["zone2"].lstrip("#").zfill(6)[:6]
+            z3 = collector.rgb_state["zone3"].lstrip("#").zfill(6)[:6]
+            z4 = collector.rgb_state["zone4"].lstrip("#").zfill(6)[:6]
+
+            log.info(f"Setting 4-zone RGB: Z1={z1}, Z2={z2}, Z3={z3}, Z4={z4}, Brightness={brightness}%")
+            res = DAMXSocketClient.send_command("set_per_zone_mode", {
+                "zone1": z1,
+                "zone2": z2,
+                "zone3": z3,
+                "zone4": z4,
+                "brightness": brightness
+            })
+            self._set_headers(200)
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+
+        elif path == "/api/set_effect":
+            eff_map = {"static": 0, "breathing": 1, "neon": 2, "wave": 3, "shifting": 4}
+            eff_name = str(payload.get("effect", "static")).lower()
+            mode_num = eff_map.get(eff_name, 0)
+            speed = max(0, min(9, int(payload.get("speed", 5))))
+            brightness = max(0, min(100, int(payload.get("brightness", collector.rgb_state.get("brightness", 100)))))
+            direction = int(payload.get("direction", 1))
+            
+            r = int(payload.get("red", 255))
+            g = int(payload.get("green", 46))
+            b = int(payload.get("blue", 77))
+
+            log.info(f"Setting RGB Effect: {eff_name} (Mode={mode_num}, Speed={speed}, Brightness={brightness})")
+            res = DAMXSocketClient.send_command("set_four_zone_mode", {
+                "mode": mode_num,
+                "speed": speed,
+                "brightness": brightness,
+                "direction": direction,
+                "red": r,
+                "green": g,
+                "blue": b
+            })
             self._set_headers(200)
             self.wfile.write(json.dumps(res).encode("utf-8"))
 

@@ -96,19 +96,46 @@ export const api = {
     }
   },
 
+  async setBrightness(brightness: number): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/set_brightness`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brightness }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
   async setRgb(
     zone: string,
-    red: number,
-    green: number,
-    blue: number,
-    brightness: number,
-    effect: string = "static"
+    hex: string,
+    brightness: number
   ): Promise<boolean> {
     try {
       const res = await fetch(`${API_BASE}/set_rgb`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ zone, red, green, blue, brightness, effect }),
+        body: JSON.stringify({ zone, hex, brightness }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async setEffect(
+    effect: string,
+    speed: number = 5,
+    brightness: number = 100
+  ): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/set_effect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ effect, speed, brightness }),
       });
       return res.ok;
     } catch {
