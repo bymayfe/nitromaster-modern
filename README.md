@@ -1,103 +1,137 @@
 # ⚡ NitroMaster — Next-Gen Acer Nitro Control Center
 
-> **Modern, Ultra-Fast & Sleek Hardware Control Dashboard for Acer Nitro 16 (AN16-42) on Linux / CachyOS**  
-> Built with **React 19**, **Tailwind CSS**, **Vite**, **Lucide Icons** and **Zero-Latency Linux Kernel Bridge**.
+<div align="center">
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%2F%20CachyOS-orange.svg)](https://cachyos.org)
+[![React](https://img.shields.io/badge/Frontend-React%2019%20%2B%20TypeScript%20%2B%20Vite-61dafb.svg)](https://vitejs.dev/)
+[![Tailwind](https://img.shields.io/badge/Styling-Tailwind%20CSS%20Glassmorphism-38bdf8.svg)](https://tailwindcss.com/)
+
+**Modern, Ultra-Fast & Sleek Hardware Control Dashboard for Acer Nitro Laptops (AN16-42 & More) on Linux.**
+
+[🇹🇷 Türkçe Dökümantasyon İçin Tıklayın (README_TR.md)](README_TR.md)
+
+</div>
 
 ---
 
-## ⚠️ Kritik Çekirdek Sürücüsü: `linuwu_sense`
+## 📸 Screenshots
 
-NitroMaster, donanım özelliklerini doğrudan Linux çekirdeği seviyesindeki **`linuwu_sense`** modülü üzerinden kontrol eder.
+### 1. Dashboard & Live Hardware Telemetry
+> Real-time CPU/GPU load, temperature, 140W RTX 4070 TGP power tracking, one-click thermal profile switching, and dual spinning AeroBlade 3D tachometers.
 
-### ❓ `linuwu_sense` Nedir ve Neden Zorunludur?
-Acer Nitro serisi laptopların gömülü denetleyicisi (EC - Embedded Controller) ve WMI arayüzleri standart Linux çekirdeğinde tam olarak yer almaz. **`linuwu_sense`** (DKMS sürücüsü), Linux çekirdeği ile Nitro donanımı arasındaki köprüyü kurar:
+![NitroMaster Dashboard](screenshots/dashboard-telemetry.png)
 
-* 🌀 **Fan Kontrolü:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/fan_speed`
-* 🌈 **4-Bölge RGB Klavye & 8 Efekt:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/four_zoned_kb/per_zone_mode` ve `four_zone_mode`
-* 🔋 **%80 Pil Koruma Limiti:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/battery_limiter`
+---
+
+### 2. 4-Zone RGB Lighting Studio & 8 Hardware Effects
+> Interactive 4-zone keyboard map, custom hex palette, 8 hardware lighting animations, speed (1-9), direction, and LED brightness slider.
+
+![NitroMaster RGB Studio](screenshots/rgb-studio.png)
+
+---
+
+## ⚠️ Critical Kernel Requirement: `linuwu_sense`
+
+NitroMaster communicates directly with Acer Nitro Embedded Controllers (EC) through the **`linuwu_sense`** Linux kernel module:
+
+* 🌀 **Fan Control:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/fan_speed`
+* 🌈 **4-Zone RGB & 8 Effects:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/four_zoned_kb/per_zone_mode` & `four_zone_mode`
+* 🔋 **80% Battery Care Mode:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/battery_limiter`
 * ⚡ **165Hz LCD Panel Overdrive:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/lcd_override`
-* 🔌 **Kapalıyken USB Şarj:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/usb_charging`
-* 🔊 **Açılış Sesi ve Işık Zamanlayıcısı:** `boot_animation_sound` ve `backlight_timeout`
+* 🔌 **USB Power-Off Charging:** `/sys/module/linuwu_sense/drivers/platform:acer-wmi/acer-wmi/nitro_sense/usb_charging`
 
 > [!IMPORTANT]
-> **`linuwu_sense` ÇEKİRDEK MODÜLÜ OLMADAN NITROMASTER'IN DONANIM KONTROL ÖZELLİKLERİ ÇALIŞMAZ.**  
-> Kurulum sırasında `install.sh` betiği bu modülü otomatik kontrol eder; yüklü değilse size sorarak GitHub üzerinden otomatik indirip DKMS ile derler.
+> **WITHOUT `linuwu_sense`, HARDWARE CONTROL COMMANDS WILL NOT FUNCTION.**  
+> The interactive `./install.sh` script automatically detects `linuwu_sense`, and will prompt to download and build it with DKMS if missing.
 
 ---
 
-## 🌟 Özellikler
+## 🌟 Key Features
 
-* 🎨 **Fütüristik Cyber-Dark Tasarım:** Glassmorphism arayüz, neon LED efektleri, 165Hz akıcı geçişler.
-* ⚡ **Canlı Donanım Telemetrisi:**
-  * **AMD Ryzen 7 8845HS:** Anlık çekirdek sıcaklığı (°C), saat hızı (GHz), kullanım yüzdesi (%).
-  * **NVIDIA GeForce RTX 4070 Laptop:** Sıcaklık (°C), Anlık güç çekimi (**Watt / TGP**), VRAM kullanımı, Core & Memory frekansları.
-  * **AeroBlade 3D Çift Fan Göstergeleri:** CPU ve GPU fanlarının anlık gerçek RPM değerleri ve hız takometreleri.
-* 🔘 **Tek Tıkla Termal Mod Seçimi:**
-  * **Quiet:** Sessiz ve serin kullanım.
-  * **Balanced:** Günlük dinamik soğutma.
-  * **Performance:** %75 fan hızı ve yüksek saat hızları.
-  * **Turbo:** 140W RTX 4070 TGP ve %100 fan kilidi.
-  * **ECO (Pil):** Pildeyken maksimum pil ömrü sağlayan enerji tasarruf modu.
-* 🌈 **4-Bölge RGB Klavye Stüdyosu:**
-  * Ekranda gerçek Nitro 16 klavye düzeni üzerinde 4 bölgeye dokunarak renk seçebilme.
-  * Hızlı renk paletleri ve canlı Hex renk seçici.
-  * **8 Donanım Destekli Dinamik Efekt:**
-    1. ✨ *Static (Sabit Renk)*
-    2. 🫁 *Breathing (Nefes Alma)*
-    3. 🌈 *Neon Spectrum (Neon Döngüsü)*
-    4. 🌊 *RGB Wave (Gökkuşağı Dalgası)*
-    5. 💫 *Color Shift (Renk Kayması)*
-    6. 🎯 *Zoom (Genişleyen Halka)*
-    7. ☄️ *Meteor Shower (Kayan Yıldız)*
-    8. ⭐ *Twinkling Stars (Yıldız Parıltısı)*
-  * Efekt Hız Ayarı (Seviye 1 - 9) ve Dalga Yönü (Sol ➔ Sağ / Sağ ➔ Sol).
-  * LED Parlaklık Kaydırıcısı (%0 - %100).
-* 🎛️ **Özel Fan Eğrisi / Manuel Ayar:**
-  * CPU ve GPU fan hızlarını senkron veya bağımsız olarak %0-%100 arasında anlık ayarlama.
-* 🔋 **Donanım ve Pil Koruma Anahtarları:**
-  * %80 Pil Koruma Limiti (Battery Care Mode).
-  * 165Hz LCD Panel Overdrive (Ghosting / Motion Blur engelleme).
-  * Kapalıyken USB'den Cihaz Şarjı (USB Power-Off Charging).
-  * Nitro Açılış Sesi Aç/Kapa.
-  * 30sn Klavye Aydınlatması Otomatik Uyku Modu.
+* 🎨 **Cyber-Dark Glassmorphism Design:** Modern neon aesthetic, responsive layout, 165Hz smooth UI transitions.
+* ⚡ **Real-Time Telemetry & Hardware Sensors:**
+  * **AMD Ryzen 7 8845HS:** Core temperature (°C), Clock speed (GHz), and % CPU load.
+  * **NVIDIA GeForce RTX 4070 Laptop:** Real-time Power draw (**Watts / TGP**), Core & Memory MHz, VRAM usage.
+  * **AeroBlade 3D Dual Fans:** Dynamic spinning SVG turbines synced to real RPM with live status tags.
+* 🔘 **Instant Thermal & Power Profiles:**
+  * **Quiet:** Silent operation, low TDP, whisper fans.
+  * **Balanced:** Smart dynamic fan curve for everyday workflow.
+  * **Performance:** 75% target fan curve, high clock boosts.
+  * **Turbo:** Full 140W RTX 4070 TGP boost, 100% max fans.
+  * **ECO (Saver):** Energy saver profile for maximum battery longevity.
+* 🌈 **4-Zone RGB Keyboard Lighting Studio:**
+  * Interactive 4-zone layout (WASD, Center-Left, Center-Right, Numpad).
+  * Color presets + custom hex color picker.
+  * **8 Hardware-Backed Lighting Effects:**
+    1. ✨ *Static (Solid steady color)*
+    2. 🫁 *Breathing (Pulsing breath)*
+    3. 🌈 *Neon Spectrum (Smooth RGB rainbow cycle)*
+    4. 🌊 *RGB Wave (Flowing wave)*
+    5. 💫 *Color Shift (Rhythmic zone transitions)*
+    6. 🎯 *Zoom (Expanding radial wave)*
+    7. ☄️ *Meteor Shower (Rapid light streaks)*
+    8. ⭐ *Twinkling Stars (Random starry glimmers)*
+  * Animation Speed Slider (Level 1 - 9) & Direction Toggle (Left ➔ Right / Right ➔ Left).
+  * LED Brightness Slider (%0 - %100).
+* 🎛️ **Manual Fan Calibration:**
+  * Auto, Max (%100 Turbo), or Custom independent CPU/GPU fan curves.
+  * Single-toggle dual fan sync.
+* 🔋 **Hardware & Battery Care:**
+  * 80% Battery Care Limiter.
+  * 165Hz LCD Panel Overdrive toggle (anti-ghosting).
+  * USB Power-Off Charging.
+  * Acer Boot Animation Sound toggle.
+  * 30s Keyboard Backlight Auto-Sleep toggle.
 
 ---
 
-## 🛠️ Kurulum (Otomatik & Etkileşimli)
+## 🛠️ Quick Installation
 
-Kurulum betiğini çalıştırmanız yeterlidir:
+Clone and run the interactive setup script:
 
 ```bash
-cd ~/Desktop/Projects/nitromaster-modern
+git clone https://github.com/bymayfe/nitromaster-modern.git
+cd nitromaster-modern
 ./install.sh
 ```
 
-### `install.sh` Neler Yapar?
-1. **`linuwu_sense` Kontrolü:** Modül yüklü mü bakar. Yüklü değilse onayınızı alarak DKMS ile çekirdeğe derler ve yükler.
-2. **Sistem Bağımlılıkları:** Node.js, npm, Python3 kontrolü yapar.
-3. **React Derlemesi:** Vite ile ultra hızlı production build alır (`dist/`).
-4. **Systemd User Servisi:** `nitromaster-bridge.service` servisini kurar ve arka planda başlatır.
-5. **Masaüstü Entegrasyonu:** KDE / GNOME menüsüne `NitroMaster Control Center` kısayolunu ekler.
+### What `./install.sh` Does:
+1. Verifies if `linuwu_sense` is loaded (prompts to install via DKMS if missing).
+2. Checks Node.js, npm, and Python 3.
+3. Builds the React 19 production bundle (`npm run build`).
+4. Configures and starts the background `nitromaster-bridge.service` user service.
+5. Installs the desktop launcher into your application menu (`~/.local/share/applications/nitromaster.desktop`).
 
 ---
 
-## 🚀 Çalıştırma
+## 🚀 How to Launch
 
-Kurulumdan sonra:
-
-* **Masaüstü Menüsünden:** Arama çubuğuna `NitroMaster` yazarak açabilirsiniz.
-* **Terminalden:**
+* **From Application Menu:** Search for `NitroMaster Control Center`.
+* **From Terminal:**
   ```bash
   cd ~/Desktop/Projects/nitromaster-modern
   ./launch.sh
   ```
-* **Web Tarayıcısından:**  
-  Doğrudan [http://127.0.0.1:16420](http://127.0.0.1:16420) adresine gidebilirsiniz.
+* **From Web Browser:**  
+  Navigate directly to [http://127.0.0.1:16420](http://127.0.0.1:16420).
 
 ---
 
-## 🏗️ Mimari & Teknoloji Yığını
+## 🏗️ Architecture & Tech Stack
 
 * **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS + Lucide Icons
 * **Backend Bridge:** Python 3 `ThreadingHTTPServer` REST & Sysfs Telemetry Server (`127.0.0.1:16420`)
-* **Kernel & Sürücü:** `linuwu_sense` DKMS Platform Driver + `/var/run/DAMX.sock`
+* **Hardware Drivers:** `linuwu_sense` DKMS Platform Driver + `/var/run/DAMX.sock`
+
+---
+
+## 📄 License
+
+Distributed under the **GNU General Public License v3.0 (GPLv3)**. See [LICENSE](LICENSE) for more details.
+
+---
+
+<div align="center">
+Made with ❤️ for the Linux & Acer Nitro Community by <b>Seyfettin (<a href="https://github.com/bymayfe">@bymayfe</a>)</b>
+</div>
